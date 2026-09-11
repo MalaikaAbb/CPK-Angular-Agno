@@ -8,9 +8,21 @@ dependencies = [
     "ag-ui-protocol>=0.1.19",
     "agno>=2.8.7",
     "fastapi>=0.141.1",
+    "jsonpatch>=1.33",
     "openai>=3.0.0",
     "python-dotenv>=1.2.2",
     "python-multipart>=0.0.32",
-    "sqlalchemy>=2.0.52",
+    # The asyncio extra, not bare sqlalchemy: Agno stores sessions through
+    # SQLAlchemy asyncio, which refuses to import without greenlet. A normal run
+    # got greenlet incidentally from the lock; an upgrade run resolved a tree
+    # without it and the agent died at import with ModuleNotFoundError.
+    "sqlalchemy[asyncio]>=2.0.52",
     "uvicorn>=0.52.1",
 ]
+
+[tool.uv]
+# Windows Smart App Control blocks the unsigned _ctypes.pyd in uv's own managed
+# CPython builds, so anything importing click (uvicorn) dies at import. Force uv
+# onto the python.org-signed interpreter and never let it fall back to a download.
+python-preference = "only-system"
+python-downloads = "never"

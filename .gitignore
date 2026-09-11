@@ -21,6 +21,13 @@ backend/__pycache__/
 backend/agno.db
 *.db
 
+# Recordings & Autorecorder
+autorecorder/node_modules/
+autorecorder/videos/*.webm
+autorecorder/videos/RUN_REPORT.*
+autorecorder/videos/logs/
+autorecorder/videos/.temp_chunks/
+
 # OS
 .DS_Store
 
@@ -28,3 +35,4 @@ backend/agno.db
 # The snapshot itself (doc-snapshot/pages/, manifest.json, CHANGELOG.md)
 # IS committed; it is the baseline every diff is taken against.
 doc-snapshot/reports/
+x   
