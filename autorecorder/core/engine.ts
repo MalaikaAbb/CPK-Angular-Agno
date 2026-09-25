@@ -4,7 +4,7 @@ import { chromium, type Browser, type BrowserContext, type Page } from 'playwrig
 import { executePageAction } from '../actions';
 import { diagnoseError } from './diagnostics';
 import { SELECTORS } from '../config/selectors.config';
-import { captureConsole, type ConsoleEntry } from './console-capture';
+import { breakingErrors, captureConsole, type ConsoleEntry } from './console-capture';
 import { buildFailureEvidence, snapshotLogOffsets, writeFailureLog, type LogSource } from './failure-evidence';
 import { generateIdeHtml, type IdeTabConfig } from './ide/generator';
 import { humanClick, humanGlide, humanScrollDown, restCursorSomewhere, sleep } from './overlays/cursor';
@@ -768,6 +768,16 @@ export class RecordingEngine {
       console.error(`❌ Recording error for ${config.id}:`, recordError);
     } finally {
       console_?.stop();
+
+      // The app throwing is a failure, not a footnote. It used to become one
+      // warning line, so a page that crashed mid-take still reported PASS*.
+      const breaking = distinctErrors(breakingErrors(console_?.entries ?? []));
+      if (!recordError && breaking.length > 0) {
+        recordError =
+          `The app threw during the take (${breaking.length} distinct error(s)), first: ${breaking[0]}`;
+        recordSuccess = false;
+        console.error(`\n❌ [Page error on ${config.id}]: ${recordError}\n`);
+      }
 
       // A failed take leaves the diagnosed error, the browser console and this
       // page's slice of the server logs in videos/logs/<id>.error.log. Never

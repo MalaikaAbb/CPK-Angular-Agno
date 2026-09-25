@@ -33,3 +33,11 @@ what goes through `ctx`.
 
 When a change here is worth keeping across repos, it belongs in `core/` and
 should be ported to the other copies — say so explicitly so it can be.
+
+## `core/` change ported from DeepAgentspy-angular (2026-09-25)
+
+- `console-capture.ts` / `engine.ts`: `breakingErrors`. An uncaught exception,
+  Angular's `ERROR`/`NG0xxx`, or a failed request to a localhost harness server
+  now FAILs the take instead of adding one warning line.
+- This recorder has no `[ISSUE]` outcome. DeepAgentspy-angular's
+  `ctx.reproduced` / `[ISSUE]`-only-when-observed is there if you need it.

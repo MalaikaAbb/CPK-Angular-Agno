@@ -162,3 +162,27 @@ export function findEntries(
   }
   return out;
 }
+
+/**
+ * Entries that mean the app under test broke, as opposed to console noise.
+ *
+ * - an uncaught exception (`pageerror`);
+ * - Angular's ErrorHandler, which catches component errors and logs them as
+ *   `ERROR ...` instead of letting them reach `pageerror`, and any `NG0xxx`;
+ * - a request to one of the harness's own servers (localhost) that failed at
+ *   the network level. `ERR_ABORTED` is the browser cancelling, not a failure.
+ *
+ * A plain `console.error` from a library stays a warning: too many packages
+ * log recoverable conditions there for it to decide a verdict on its own.
+ */
+const BREAKING_CONSOLE = /^ERROR\b|\bNG0\d{3,}\b/;
+const LOCAL_REQUEST = /^\w+ https?:\/\/(localhost|127\.0\.0\.1)[:/]/;
+
+export function breakingErrors(entries: ConsoleEntry[]): ConsoleEntry[] {
+  return entries.filter((e) => {
+    if (e.level !== 'error') return false;
+    if (e.source === 'Uncaught') return true;
+    if (e.source === 'network') return LOCAL_REQUEST.test(e.text) && !/ERR_ABORTED/.test(e.text);
+    return BREAKING_CONSOLE.test(e.text);
+  });
+}
