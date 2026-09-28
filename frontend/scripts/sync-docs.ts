@@ -39,7 +39,7 @@ const DOC_PAGES = [
   { docPath: '/angular/agno/concepts/architecture', routes: [] },
   { docPath: '/angular/agno/contributing/code-contributions', routes: [] },
   // Linked from tracked pages and live, but in no sitemap entry for this
-  // section -- found by ci/lib/linked-pages.mjs, tracked 2026-09-18.
+  // section -- found by following their links, tracked 2026-09-18.
   { docPath: '/angular/agno/agentic-protocols/ag-ui', routes: [] },
   { docPath: '/angular/agno/backend/agent-runner', routes: [] },
   { docPath: '/angular/agno/backend/copilot-runtime', routes: [] },

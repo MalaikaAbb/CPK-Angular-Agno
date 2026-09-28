@@ -7,7 +7,7 @@
  * `frontend/server.ts` passes `intelligence` to `CopilotRuntime`, so the
  * hand-built `injectThreads` list and `CopilotThreadsDrawer` both resolve real
  * threads. The finding is what the guide leaves out — it never mentions
- * Intelligence or a project API key — and that lives in the report, not on
+ * Intelligence or a project API key — and that lives in FINDINGS.md, not on
  * screen. This clip carries no Notepad note and no voiceover: it shows the
  * feature, and the bare-button list the guide publishes is visible as-is.
  *

@@ -130,7 +130,7 @@ any `extraTabs` — plus its own page definition, so changing a prompt or a
 highlighted line range marks it stale exactly as an edit to the code does.
 
 `npm run manifest:check` prints without writing and exits 1 if anything is stale
-or missing, which is the form to put in CI.
+or missing.
 
 **What it does not tell you: whether the run passed.** Playwright saves the video
 even when a page fails, so a clip from a failed run still looks current. Freshness
@@ -156,12 +156,11 @@ and correctness are different questions — the run summary answers the second o
 - **FAIL** — the demo route 404'd, never rendered a chat surface, the agent never
   answered, the IDE view could not be built, or the handler reported that the
   feature under test did not work (`ctx.fail`). The clip is still saved as
-  evidence. The process exits 1, so this is safe to gate CI on.
+  evidence. The process exits 1, so a wrapping script sees the failure.
 
 Every run also writes `videos/RECORD_RESULTS.json` — one entry per page with
-the verdict, duration, warnings and distinct console errors. `ci/lib/report.mjs`
-reads it, so the CI report lists what *this run* recorded rather than every
-`.webm` that happens to be in the folder.
+the verdict, duration, warnings and distinct console errors, so it lists what
+*this run* recorded rather than every `.webm` that happens to be in the folder.
 
 ---
 
@@ -174,8 +173,7 @@ errors, and this page's slice of `videos/logs/backend.log` and
 to `videos/logs/<page-id>.error.log`. Each section is windowed around the
 line most worth reading (a traceback, an `Error`, a 4xx/5xx) and that line
 is marked `>>`, so an agent can diagnose from the log without re-running
-anything locally. CI uploads the file with the run (the shard upload glob
-covers `videos/logs/*.log`).
+anything locally.
 
 The React recorders also replay the same text in their simulated terminal
 window at the end of the clip. This recorder has no terminal window
@@ -246,8 +244,8 @@ to change for a port, that is a bug in this folder — see ADAPT.md.
 
 Every pace in a take comes from `core/overlays/human.ts`, seeded from the
 page id. So the Quickstart clip and the Chat UI clip do not type, pause and
-scroll in the same rhythm — but tonight's Quickstart clip is identical to
-last night's, which keeps two recordings of the same page comparable.
+scroll in the same rhythm — but two takes of the Quickstart page are
+identical in pace, which keeps two recordings of the same page comparable.
 
 - **Typing** has a person's rhythm: jittered keystrokes, a beat after
   punctuation, the odd mid-sentence pause. A retry after a swallowed submit is
@@ -255,7 +253,7 @@ last night's, which keeps two recordings of the same page comparable.
 - **Scrolling** is in bursts: a few wheel notches, a reading pause, a few more,
   sometimes a nudge back up.
 - **Pauses** vary by about a quarter around their nominal length. They are
-  the only thing `AUTORECORD_PACE` scales (CI sets `0.85`): a reading or
+  the only thing `AUTORECORD_PACE` scales (e.g. `0.85`): a reading or
   thinking pause gets shorter, the typing, the mouse and the scrolling do not.
 - **The cursor** overshoots slightly on long travel and settles, hovers a
   variable moment before a click, drifts while a reply streams instead of

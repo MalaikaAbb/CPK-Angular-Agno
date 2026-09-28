@@ -10,7 +10,7 @@ A navigable, working test harness for the Angular section of the CopilotKit Agno
 | **Frontend** | Angular 22.1.1 · TypeScript 6.0 · Tailwind 4 · zoneless |
 | **Runtime** | Node 24.16.0 · Copilot Runtime v2 Node listener on :8210 |
 | **Backend** | Python 3.13.13 · Agno 2.8.7 · FastAPI/AgentOS on :8211 |
-| **Build status** | No CI. Locally verified: `ng build` ✅ · 14 doc routes + 12 demo routes serve 200 ✅ · live agent run with tool call ✅ · human-in-the-loop pause ✅ · shared-state snapshot ✅ · A2UI **not** observed over the wire ⚠️ (see Known issues) |
+| **Build status** | Locally verified: `ng build` ✅ · 14 doc routes + 12 demo routes serve 200 ✅ · live agent run with tool call ✅ · human-in-the-loop pause ✅ · shared-state snapshot ✅ · A2UI **not** observed over the wire ⚠️ (see Known issues) |
 
 ---
 
@@ -109,11 +109,11 @@ Then edit `backend/.env`:
 
 **5. Update to latest packages (optional)**
 
-Check before you bump. The report is read-only and sorts what is outdated into
-the only three things it can be, of which just one is actionable:
+Check before you bump. `npm outdated` is read-only, and anything it lists is one
+of only three things, of which just one is actionable:
 
 ```bash
-node ci/check-versions.mjs
+npm --prefix frontend outdated
 ```
 
 | Cause | Do |
@@ -124,8 +124,7 @@ node ci/check-versions.mjs
 
 `@copilotkit/angular` exact-pins `@copilotkit/core@1.66.0`, and Angular 22
 requires `typescript >=6.0 <6.1` — so TypeScript reads a full major behind and
-must stay there. The nightly publishes this report on its own; see
-[`ci/VERSION-WATCH.md`](ci/VERSION-WATCH.md).
+must stay there.
 
 **Frontend:**
 ```bash
@@ -155,7 +154,6 @@ Not `npx npm-check-updates -u`: it rewrites `package.json` to the newest release
 of everything, ignoring the declared ranges, and walks straight into the peer
 conflict above. Not `npm install --legacy-peer-deps` either — it does not fix a
 peer conflict, it hides one, silencing the exact signal this harness reports on.
-Dependabot is the safe alternative if PR-based automation is wanted.
 
 **Default ports:** frontend **4210**, runtime **8210**, agent **8211**.
 
@@ -220,7 +218,7 @@ npm run verify              # wiring only
 npm run verify:round-trip   # also runs the agent once — costs a model call
 ```
 
-With the runtime up and no license key, the honest result here is **2 passed, 2 failed, 3 could not be checked** — the two failures are the hosted-project and API-key checks, which no unlicensed local setup can pass. See Known issues #12 before treating `verify` as a CI gate.
+With the runtime up and no license key, the honest result here is **2 passed, 2 failed, 3 could not be checked** — the two failures are the hosted-project and API-key checks, which no unlicensed local setup can pass. See Known issues #12 before relying on `verify` as a pass/fail check.
 
 ---
 
@@ -308,7 +306,7 @@ Verified 2026-08-12 against a live stack (real OpenAI key, no license key).
 | `/angular/agno/guides/threads-…-headless` | `/memory` | ⚠️ Partial | Premium; runtime provides no memory routes, so the fallback renders. |
 | `/angular/agno/guides/threads-…-headless` | `/attachments` | ✅ Working | Picker, drag-and-drop, paste. |
 | `/angular/agno/guides/threads-…-headless` | `/headless` | ✅ Working | Shares the `default` conversation with the other demos. |
-| `/angular/agno/inspector` | `/inspector` | ✅ Working | Verified live: element mounts, panel opens, System Health *Healthy*, `RUN_FINISHED` in Recent activity after a real run. Not reproducible on 0.3.1 — Known issues #12; launcher position caveat #15. The manifest carried no `routes` for this page until 2026-09-21, so `check-page-coverage` reported the live `/inspector` route as untracked and the page as unrouted. Both now point at each other. |
+| `/angular/agno/inspector` | `/inspector` | ✅ Working | Verified live: element mounts, panel opens, System Health *Healthy*, `RUN_FINISHED` in Recent activity after a real run. Not reproducible on 0.3.1 — Known issues #12; launcher position caveat #15. The manifest carried no `routes` for this page until 2026-09-21, so the live `/inspector` route counted as untracked and the page as unrouted. Both now point at each other. |
 | `/angular/agno/cli` | — | 🚧 Not started | No route. The new `verify` section is exercised through `npm run verify` instead; findings in Known issues #12. |
 | `/angular/agno/intelligence/memories` | `/memory` | ⚠️ Partial | The page's Angular path is `injectMemories()`, which `/memory` already mounts. Premium; recording stopped (`756ec4b`). |
 | `/angular/agno/intelligence/learned-skills` | — | ❌ Broken | No Agno adapter, and every Python package it names is 404 on PyPI — Known issues #26. The 2026-09-21 sync added a BuiltInAgent row and two BuiltInAgent snippets: `learnedSkills` does not exist on `BuiltInAgent` in the declared `@copilotkit/runtime` 1.70.1, and the factory sample imports `ai` and `@ai-sdk/openai`, which the page never tells you to install (#33, #34). The `learnedSkills` half is resolved at 1.73.3, which this repo now declares. The 2026-09-23 sync uncommented a placeholder revision pin in every example (#40) and its Reuse-client sample sets `apiUrl` without `wsUrl` (#39). |
@@ -331,17 +329,6 @@ Verified 2026-08-12 against a live stack (real OpenAI key, no license key).
 | `/angular/agno/contributing/code-contributions/package-linking` | — | 📖 Reference | Contributor setup. |
 
 **Legend:** ✅ Working · ⚠️ Partial (blocked by something outside this repo) · 📖 Reference · ❌ Broken · 🚧 Not started
-
-**On the `[no-route]` lines `npm run drift` prints.** `ci/check-page-coverage.mjs`
-reports every manifest page whose `routes` is empty, and 33 of the 44 tracked
-pages are reference material with no browser surface: runtime and backend
-configuration, deployment, contributor setup, editor tooling, premium platform
-docs. Those are tested by compiling or probing what they publish and writing
-the result here, not by standing up a UI for them, so the empty `routes` is the
-decision rather than an oversight. The list is informational and the drift gate
-still exits 0. A `[no-route]` line is worth acting on only when the page really
-does have an implementation here, which was the case exactly once: `/inspector`
-(see its row above).
 
 ---
 
@@ -367,21 +354,6 @@ browser and drive the live feature.
    visible cursor: prompts typed key by key, token-stream completion detection,
    tool cards, approval clicks, attachment uploads, tab switches, and a Windows 11
    Notepad window for pages whose finding is a limitation rather than a feature.
-
-### One command, from a cold repo
-
-[`ci/`](ci/README.md) drives the whole thing — doc-drift check, preflight,
-dependency install, all three servers, recording, mux and report — from a single
-Node process, and is what the nightly GitHub Actions workflow runs:
-
-```bash
-npm run automate                              # everything, all pages
-npm run automate -- --pages=quickstart,threads
-npm run automate -- --limit=3 --ignore-doc-drift
-```
-
-It starts the servers itself, so the section below applies only when you would
-rather drive the recorder by hand against servers you started yourself.
 
 ### How to run
 

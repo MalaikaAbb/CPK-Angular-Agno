@@ -28,8 +28,8 @@
  *   ctx.warn('"Mark high priority" button not found')  -> [PASS*] with the note
  *   ctx.fail('approval card never rendered')           -> [FAIL], clip still saved
  *
- * A `console.warn` reaches nobody: the summary, videos/RECORD_RESULTS.json and
- * the CI report only see what goes through `ctx`.
+ * A `console.warn` reaches nobody: the summary and videos/RECORD_RESULTS.json
+ * only see what goes through `ctx`.
  */
 
 import { type ActionContext, type PageActionHandler, type PageRecordConfig } from '../core/types';
