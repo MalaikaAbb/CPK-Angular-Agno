@@ -5,12 +5,12 @@ A navigable, working test harness for the Angular section of the CopilotKit Agno
 | | |
 |---|---|
 | **Doc sync date** | 2026-08-12 (docs last fetched live) |
-| **CopilotKit packages** | `@copilotkit/angular` 0.5.1 · `@copilotkit/runtime` 1.70.1 |
+| **CopilotKit packages** | `@copilotkit/angular` 0.5.2 · `@copilotkit/runtime` 1.73.3 (upgraded 2026-09-23 from 0.5.1 / 1.70.1; `@copilotkit/angular` 0.5.2 still exact-pins `@copilotkit/core`, `shared`, `web-inspector` and `web-components` at 1.70.2) |
 | **AG-UI packages** | `@ag-ui/agno` 0.0.5 |
 | **Frontend** | Angular 22.1.1 · TypeScript 6.0 · Tailwind 4 · zoneless |
-| **Runtime** | Node 24.16.0 · Copilot Runtime v2 Node listener on :8200 |
-| **Backend** | Python 3.13.13 · Agno 2.8.7 · FastAPI/AgentOS on :8000 |
-| **Build status** | No CI. Locally verified: `ng build` ✅ · 14 doc routes + 12 demo routes serve 200 ✅ · live agent run with tool call ✅ · human-in-the-loop pause ✅ · shared-state snapshot ✅ · A2UI **not** observed over the wire ⚠️ (see Known issues) |
+| **Runtime** | Node 24.16.0 · Copilot Runtime v2 Node listener on :8210 |
+| **Backend** | Python 3.13.13 · Agno 2.8.7 · FastAPI/AgentOS on :8211 |
+| **Build status** | Locally verified: `ng build` ✅ · 14 doc routes + 12 demo routes serve 200 ✅ · live agent run with tool call ✅ · human-in-the-loop pause ✅ · shared-state snapshot ✅ · A2UI **not** observed over the wire ⚠️ (see Known issues) |
 
 ---
 
@@ -31,14 +31,14 @@ Scope is the eight pages named at build time: the quickstart plus the seven task
 ```
 Browser (Angular 22, zoneless)
   │  @copilotkit/angular — provideCopilotKit, <copilot-chat>, signal APIs
-  │  POST http://localhost:8200/api/copilotkit
+  │  POST http://localhost:8210/api/copilotkit
   ▼
-Copilot Runtime  ·  localhost:8200        ← Node, frontend/server.ts
+Copilot Runtime  ·  localhost:8210        ← Node, frontend/server.ts
   │  agents: { default, support } → new AgnoAgent({ url })
   │  a2ui: {}  → A2UIMiddleware
-  │  POST http://localhost:8000/agui      ← AG-UI over SSE
+  │  POST http://localhost:8211/agui      ← AG-UI over SSE
   ▼
-Agno AgentOS  ·  localhost:8000           ← Python / FastAPI
+Agno AgentOS  ·  localhost:8211           ← Python / FastAPI
   │  AgentOS(agents=[agent], interfaces=[AGUI(agent=agent)])
   ▼
 OpenAI  (gpt-4o)
@@ -101,19 +101,19 @@ Then edit `backend/.env`:
 | Variable | Where | What it does |
 |---|---|---|
 | `OPENAI_API_KEY` | `backend/.env` | **Required.** The model key. |
-| `AGNO_AGENT_URL` | shell for the runtime | Where the runtime finds the agent. Defaults to `http://localhost:8000/agui`. |
-| `PORT` | shell for the runtime | Runtime port. Defaults to `8200`. |
+| `AGNO_AGENT_URL` | shell for the runtime | Where the runtime finds the agent. Defaults to `http://localhost:8211/agui`. |
+| `PORT` | shell for the runtime | Runtime port. Defaults to `8210`. |
 | `COPILOTKIT_TELEMETRY_DISABLED` | shell for the runtime | Opt out of anonymous runtime telemetry. |
 
-> The Angular app's `runtimeUrl` is hardcoded to `http://localhost:8200/api/copilotkit` in `frontend/src/app/app.config.ts`, following the quickstart. If you change `PORT`, change that too.
+> The Angular app's `runtimeUrl` is hardcoded to `http://localhost:8210/api/copilotkit` in `frontend/src/app/app.config.ts`, following the quickstart. If you change `PORT`, change that too.
 
 **5. Update to latest packages (optional)**
 
-Check before you bump. The report is read-only and sorts what is outdated into
-the only three things it can be, of which just one is actionable:
+Check before you bump. `npm outdated` is read-only, and anything it lists is one
+of only three things, of which just one is actionable:
 
 ```bash
-node ci/check-versions.mjs
+npm --prefix frontend outdated
 ```
 
 | Cause | Do |
@@ -124,8 +124,7 @@ node ci/check-versions.mjs
 
 `@copilotkit/angular` exact-pins `@copilotkit/core@1.66.0`, and Angular 22
 requires `typescript >=6.0 <6.1` — so TypeScript reads a full major behind and
-must stay there. The nightly publishes this report on its own; see
-[`ci/VERSION-WATCH.md`](ci/VERSION-WATCH.md).
+must stay there.
 
 **Frontend:**
 ```bash
@@ -155,9 +154,8 @@ Not `npx npm-check-updates -u`: it rewrites `package.json` to the newest release
 of everything, ignoring the declared ranges, and walks straight into the peer
 conflict above. Not `npm install --legacy-peer-deps` either — it does not fix a
 peer conflict, it hides one, silencing the exact signal this harness reports on.
-Dependabot is the safe alternative if PR-based automation is wanted.
 
-**Default ports:** frontend **4200**, runtime **8200**, agent **8000**.
+**Default ports:** frontend **4210**, runtime **8210**, agent **8211**.
 
 ---
 
@@ -175,7 +173,7 @@ uv run main.py
 Success looks like:
 
 ```
-INFO:     Uvicorn running on http://localhost:8000 (Press CTRL+C to quit)
+INFO:     Uvicorn running on http://localhost:8211 (Press CTRL+C to quit)
 INFO:     Application startup complete.
 ```
 
@@ -189,9 +187,9 @@ npm run dev
 `dev` runs the Copilot Runtime and `ng serve` side by side under `concurrently`, with each line prefixed by which process wrote it. Success looks like:
 
 ```
-[runtime] Copilot Runtime listening at http://localhost:8200/api/copilotkit
-[runtime] Agno agent: http://localhost:8000/agui
-[angular]   ➜  Local:   http://localhost:4200/
+[runtime] Copilot Runtime listening at http://localhost:8210/api/copilotkit
+[runtime] Agno agent: http://localhost:8211/agui
+[angular]   ➜  Local:   http://localhost:4210/
 ```
 
 Ctrl-C stops both. `--kill-others` means a crash in either one takes the other down rather than leaving half a stack running — if the runtime dies you'll see `Sending SIGTERM to other processes..` and the app exits too, instead of a chat that silently can't reach anything.
@@ -199,16 +197,16 @@ Ctrl-C stops both. `--kill-others` means a crash in either one takes the other d
 To run them separately — different terminals, independent restarts — the underlying scripts are still there:
 
 ```bash
-npm run runtime   # Copilot Runtime only, :8200
-npm start         # Angular dev server only, :4200
+npm run runtime   # Copilot Runtime only, :8210
+npm start         # Angular dev server only, :4210
 ```
 
-Open **<http://localhost:4200>**. The Introduction route probes both backends and shows a connection panel — check it first if anything misbehaves.
+Open **<http://localhost:4210>**. The Introduction route probes both backends and shows a connection panel — check it first if anything misbehaves.
 
 The one-command check the quickstart prescribes:
 
 ```bash
-curl -s http://localhost:8200/api/copilotkit/info
+curl -s http://localhost:8210/api/copilotkit/info
 ```
 
 It should list `default` and `support` under `agents`.
@@ -220,7 +218,7 @@ npm run verify              # wiring only
 npm run verify:round-trip   # also runs the agent once — costs a model call
 ```
 
-With the runtime up and no license key, the honest result here is **2 passed, 2 failed, 3 could not be checked** — the two failures are the hosted-project and API-key checks, which no unlicensed local setup can pass. See Known issues #12 before treating `verify` as a CI gate.
+With the runtime up and no license key, the honest result here is **2 passed, 2 failed, 3 could not be checked** — the two failures are the hosted-project and API-key checks, which no unlicensed local setup can pass. See Known issues #12 before relying on `verify` as a pass/fail check.
 
 ---
 
@@ -302,14 +300,33 @@ Verified 2026-08-12 against a live stack (real OpenAI key, no license key).
 | `/angular/agno/guides/frontend-tools-generative-ui` | `/frontend-tools-generative-ui` | ⚠️ Partial | `registerRenderToolCall` verified over the wire: `getWeather` called with `{"city":"Tokyo"}`. The guide’s new first section, `registerComponent`, is mounted and runs on `^0.5.1`, and its published snippet is wrong four ways — Known issues #19. `registerFrontendTool` samples shown, not mounted — see Known issues #4. |
 | `/angular/agno/guides/a2ui` | `/a2ui` | ⚠️ Partial | Inert without a frontend catalog — that, not the runtime middleware, is the switch. See Known issues #2. |
 | `/angular/agno/guides/voice-multimodal` | `/voice-multimodal` | ⚠️ Partial | Attachments work. Transcription unavailable by design — `audioFileTranscriptionEnabled: false`. |
-| `/angular/agno/guides/human-in-the-loop` | `/human-in-the-loop` | ✅ Working | Verified: `requestApproval` emitted with **no** tool result, run pauses awaiting the browser. Interrupt half idle — agent emits none. |
+| `/angular/agno/guides/human-in-the-loop` | `/human-in-the-loop` | ⚠️ Partial | Works when the model chooses to ask: `requestApproval` emitted with **no** tool result, run pauses awaiting the browser. The model often answers without asking — Known issues #28. Interrupt half idle — agent emits none. |
 | `/angular/agno/guides/shared-state` | `/shared-state` | ✅ Working | Round-trip verified across two written values, with a harness-only diagnostics strip logging every `store().state()` transition. Agent state starts `{}` and loses `notes` on first write — Known issues #16. |
-| `/angular/agno/guides/threads-…-headless` | `/threads` | ⚠️ Partial | Premium. `/info` reports `threadEndpoints.mutations: false`. |
+| `/angular/agno/guides/threads-…-headless` | `/threads` | ⚠️ Partial | Premium. `/info` reported `threadEndpoints.mutations: false` on runtime 1.70.1; on 1.73.3 (2026-09-23) it reports `list`, `inspect`, `mutations` and `realtimeMetadata` all `true`. Not re-recorded since the upgrade. |
 | `/angular/agno/guides/threads-…-headless` | `/memory` | ⚠️ Partial | Premium; runtime provides no memory routes, so the fallback renders. |
 | `/angular/agno/guides/threads-…-headless` | `/attachments` | ✅ Working | Picker, drag-and-drop, paste. |
 | `/angular/agno/guides/threads-…-headless` | `/headless` | ✅ Working | Shares the `default` conversation with the other demos. |
-| `/angular/agno/inspector` | `/inspector` | ✅ Working | Verified live: element mounts, panel opens, System Health *Healthy*, `RUN_FINISHED` in Recent activity after a real run. Not reproducible on 0.3.1 — Known issues #12; launcher position caveat #15. |
+| `/angular/agno/inspector` | `/inspector` | ✅ Working | Verified live: element mounts, panel opens, System Health *Healthy*, `RUN_FINISHED` in Recent activity after a real run. Not reproducible on 0.3.1 — Known issues #12; launcher position caveat #15. The manifest carried no `routes` for this page until 2026-09-21, so the live `/inspector` route counted as untracked and the page as unrouted. Both now point at each other. |
 | `/angular/agno/cli` | — | 🚧 Not started | No route. The new `verify` section is exercised through `npm run verify` instead; findings in Known issues #12. |
+| `/angular/agno/intelligence/memories` | `/memory` | ⚠️ Partial | The page's Angular path is `injectMemories()`, which `/memory` already mounts. Premium; recording stopped (`756ec4b`). |
+| `/angular/agno/intelligence/learned-skills` | — | ❌ Broken | No Agno adapter, and every Python package it names is 404 on PyPI — Known issues #26. The 2026-09-21 sync added a BuiltInAgent row and two BuiltInAgent snippets: `learnedSkills` does not exist on `BuiltInAgent` in the declared `@copilotkit/runtime` 1.70.1, and the factory sample imports `ai` and `@ai-sdk/openai`, which the page never tells you to install (#33, #34). The `learnedSkills` half is resolved at 1.73.3, which this repo now declares. The 2026-09-23 sync uncommented a placeholder revision pin in every example (#40) and its Reuse-client sample sets `apiUrl` without `wsUrl` (#39). |
+| `/angular/agno/learning` | — | ⚠️ Partial | `getLearningContainerId` typechecks on runtime 1.72.0; the snippet's `agents` and `identifyUser` are undefined — #27. Needs a dashboard-created container. The 2026-09-21 sync added the daily-schedule and skill-delivery steps; its adapter list contradicts the learned-skills table it links to (#34). |
+| `/angular/agno/copilot-runtime` | — | 📖 Reference | Near-duplicate of `backend/copilot-runtime`. Both gained the same "Which name identifies an agent" section on 2026-09-21 (#29), and one more Next.js-titled snippet each (#24). |
+| `/angular/agno/backend/copilot-runtime` | — | 📖 Reference | `server.ts` already follows it (`a2ui: {}`, `intelligence`, `identifyUser`), and registers two agent-map keys (`default`, `support`), which is what the new agent-naming section teaches. Its `CopilotKitAgentDiscoveryError` is not what the Angular surface throws (#29). The new `sseKeepAliveIntervalSeconds` option is absent from the declared runtime (#30). |
+| `/angular/agno/backend/agent-runner` | — | 📖 Reference | All five TS snippets compile verbatim on 1.72.0; `runner` + `intelligence` is a type error and throws the quoted message, as documented. `server.ts` sets no runner, but it does pass `intelligence`, and a `CopilotIntelligenceRuntime` constructs an `IntelligenceAgentRunner` for you (read in 1.70.1's `runtime.mjs`), so the in-memory half of the unauthorized-thread-routes callout added on 2026-09-21 is not this harness. What applies here is its last sentence: `threads/events`, `threads/state` and `agent/stop` read the thread by id alone even on the platform, and `server.ts` guards none of them. Its cross-links point at an Auth section that does not exist (#31), and its 422 claim is reported under a different cause (#32). |
+| `/angular/agno/backend/runtime-endpoints` | — | ⚠️ Partial | `/info` and `inspector-metadata` (200, `no-store, private`, V1 body) probed and match. `/run` on this Intelligence runtime returns JSON, not the SSE the table promises — #25. The new thread-routes table matches `RouteInfo` in 1.70.1 exactly; its `onBeforeHandler` sample uses two identifiers nothing in the section defines (#31, #32). |
+| `/angular/agno/backend/ag-ui` | — | 📖 Reference | Tracked; no code to run. |
+| `/angular/agno/backend/custom-agent` | — | 📖 Reference | Tracked. Links to a dead page — #23. Its factory-context interface was renamed to `BuiltInAgentFactoryContext` with a `learnedSkills` field on 2026-09-21; neither exists in the declared runtime range (#33). |
+| `/angular/agno/backend/self-managed-agents` | — | 📖 Reference | Tracked. |
+| `/angular/agno/agentic-protocols/ag-ui` | — | 📖 Reference | Concept page, no code. |
+| `/angular/agno/runtime-server-adapter` | — | 📖 Reference | `server.ts` is its "Node.js HTTP" shape (`createCopilotNodeListener`). |
+| `/angular/agno/deploy/agentcore` | — | 📖 Reference | AWS deployment; not testable locally. Links to a dead page — #23. |
+| `/angular/agno/troubleshooting/debug-mode` | — | ⚠️ Partial | `debug` defaults table matches 1.72.0 exactly. On this Intelligence runtime `debug: true` logged only `Agent run started` — #25. |
+| `/angular/agno/troubleshooting/event-inspector` | — | ⚠️ Partial | The claims probed on 2026-09-18 all held: root path 404s with `{"error":"Not found"}`, basePath answers `: connected`, and the stream stays empty on an Intelligence run, as its warning says. The 2026-09-21 rewrite replaced the gate it documents, and the declared runtime implements the old one, so the page's central safety claim is false here (#35). |
+| `/angular/agno/telemetry` | — | 📖 Reference | No route. The 2026-09-21 change is two sentences of prose separating `CPK_INTELLIGENCE_API_KEY` from telemetry identity; consistent with `server.ts`, which uses that key for Intelligence only. |
+| `/angular/agno/intelligence/overview` | — | 📖 Reference | No route. Rewritten on 2026-09-23 (110 lines to 44): the feature table whose automatic-learning cell changed on 2026-09-21 is gone, as is its "Go to **Automatic Learning**" step (#37). Nothing in the harness quotes it. |
+| `/angular/agno/vs-code-extension` | — | 📖 Reference | Editor extension; tracked. |
+| `/angular/agno/contributing/code-contributions/package-linking` | — | 📖 Reference | Contributor setup. |
 
 **Legend:** ✅ Working · ⚠️ Partial (blocked by something outside this repo) · 📖 Reference · ❌ Broken · 🚧 Not started
 
@@ -338,29 +355,14 @@ browser and drive the live feature.
    tool cards, approval clicks, attachment uploads, tab switches, and a Windows 11
    Notepad window for pages whose finding is a limitation rather than a feature.
 
-### One command, from a cold repo
-
-[`ci/`](ci/README.md) drives the whole thing — doc-drift check, preflight,
-dependency install, all three servers, recording, mux and report — from a single
-Node process, and is what the nightly GitHub Actions workflow runs:
-
-```bash
-npm run automate                              # everything, all pages
-npm run automate -- --pages=quickstart,threads
-npm run automate -- --limit=3 --ignore-doc-drift
-```
-
-It starts the servers itself, so the section below applies only when you would
-rather drive the recorder by hand against servers you started yourself.
-
 ### How to run
 
-The backend (`:8000`), the Copilot Runtime (`:8200`) and the Angular dev server
-(`:4200`) must all be up — the recorder refuses to start otherwise.
+The backend (`:8211`), the Copilot Runtime (`:8210`) and the Angular dev server
+(`:4210`) must all be up — the recorder refuses to start otherwise.
 
 ```bash
-cd backend  && uv run main.py     # :8000
-cd frontend && npm run dev        # runtime :8200 + ng serve :4200
+cd backend  && uv run main.py     # :8211
+cd frontend && npm run dev        # runtime :8210 + ng serve :4210
 ```
 
 Then:
@@ -397,281 +399,18 @@ endpoints, unlicensed runtime). See
 
 ## 10. Known issues / doc-vs-implementation discrepancies
 
-Found while building against `@copilotkit/angular` **0.3.1** and `@copilotkit/runtime` **1.67.1**.
-
-**1. The Open Generative UI sample does not typecheck as written**
-
-[Frontend tools and generative UI](https://docs.copilotkit.ai/angular/agno/guides/frontend-tools-generative-ui) declares `const setDashboardFilter: SandboxFunction<{ filter: string }>` and then puts it in `openGenerativeUI.sandboxFunctions`. But `OpenGenerativeUIConfig.sandboxFunctions` is typed `SandboxFunction[]`, i.e. `SandboxFunction<Record<string, unknown>>[]`, and `SandboxFunction` is invariant in its `handler` parameter. The build fails with:
-
-```
-Type 'SandboxFunction<{ filter: string; }>' is not assignable to
-type 'SandboxFunction<Record<string, unknown>>'.
-```
-
-The generic parameter is effectively unusable at that call site. This repo keeps the guide's declaration and casts at the array site — the same `as unknown as` idiom the docs themselves use for the equivalent `component` variance problem in the Human-in-the-loop Showcase snippet.
-
-**2. "The A2UI renderer activates automatically" is misleading — the catalog is the switch**
-
-[A2UI](https://docs.copilotkit.ai/angular/agno/guides/a2ui) says the browser renderer "activates automatically. No extra configuration is needed", and the [Copilot Runtime](https://docs.copilotkit.ai/angular/agno/backend/copilot-runtime) page says `a2ui: {}` applies `A2UIMiddleware` to all registered agents. Both are configured here and `/api/copilotkit/info` reports `"a2uiEnabled": true`.
-
-Nothing renders. Across four runs against the Agno agent — including one that explicitly instructed the model to use the tool, and one that advertised `render_a2ui` in the run input — the agent never called it, and request `input_tokens` stayed at ~205–278.
-
-The cause is the **missing frontend catalog**, not the middleware. Supplying `a2ui.catalog` to `provideCopilotKit` is what registers the built-in `render_a2ui` tool renderer and pushes the catalog id, component schemas, and generation guidelines into agent context. With no catalog, there is nothing for the agent to generate against and no renderer to receive it — so `a2uiEnabled: true` on the server is necessary but not sufficient, and the guide's "no extra configuration is needed" reads as if it were.
-
-Still open here, because the catalog cannot be built from the guide's own code (see issue #4). The route is marked Partial. Building one is the fix; it needs `createCatalog` plus a Lit renderer per component, and two traps the docs do not mention:
-
-- **Catalogs must use Zod 3, not Zod 4.** `createCatalog` serialises each `props` schema with `zod-to-json-schema@3`, which reads Zod 3's internal `_def.typeName`. Zod 4 no longer exposes it, so a Zod 4 catalog silently produces an **empty schema** and the agent gets nothing to generate against. Use Zod 4's own `zod/v3` compatibility entry, which costs no extra dependency.
-- **Do not import the protocol's `DynamicString` from the renderer package.** `@copilotkit/a2ui-renderer` nests its own standalone `zod@3.25`, so comparing its `ZodObject` against the one from `zod/v3` sends TypeScript into a recursive structural comparison between two nominally distinct generic classes — heap exhaustion on a single component. Restate the primitive locally (`z.union([z.string(), z.object({ path: z.string() })])`) and cast once at the `createCatalog` boundary; the binder identifies it structurally, not by type identity.
-
-**3. `openGenerativeUIEnabled` is a runtime-side flag the guide never mentions**
-
-`/info` reports `"openGenerativeUIEnabled": false` even with `openGenerativeUI.sandboxFunctions` configured on the frontend. The guide presents Open Generative UI purely as a frontend `provideCopilotKit` option and documents no server-side counterpart, so it is unclear whether the sandboxed renderer can be driven with the runtime reporting false.
-
-**4. Several guide snippets are Showcase excerpts that are not self-contained**
-
-Five samples are quoted from the live Angular Showcase with their supporting code omitted, so they cannot be compiled as published. Each is displayed on its route page as a quoted sample, clearly marked as not mounted:
-
-| Guide | Snippet | Missing |
-|---|---|---|
-| Frontend tools | `createBackgroundTool` | `resolveGradient`, `BackgroundToolArgs`, imports |
-| A2UI | `fixedDefinitions` | `dynamicString` |
-| A2UI | `a2uiConfigForFeature` | `beautifulCatalog`, `declarativeCatalog`, `fixedCatalog`, and any `createCatalog` call |
-| Voice | `voiceWeatherRendererConfigs` | `VOICE_WEATHER_TOOL_NAMES`, `VoiceWeatherArgs`, `WeatherToolCard` |
-| Voice | `createMultimodalMessage` | `SampleSpec`, `MediaAgentMessage` |
-| Human-in-the-loop | `InterruptFeatureComponent` | `agentIdForCurrentIntegration`, `parseInterruptPayload`, `usesFrontendSchedulingTool`, `integrationId`, `ScheduleMeetingArgs`, `InterruptSlot`, `TimePickerCard` |
-| Headless | `HeadlessChatController` | `agentIdForCurrentIntegration`, `createMessageId`, `ShowcaseMessage` |
-
-Because no A2UI catalog can be built from the guide's own code, the A2UI route runs on the default catalog.
-
-**5. The Chat UI guide gives two different components the same name and selector**
-
-Both the inline-chat sample and the custom-assistant-message sample are `SupportChatComponent` / `app-support-chat`, and the popup/sidebar sample is `AppComponent` / `app-root`. Mounting all three at once is impossible as published. This repo keeps the first as `SupportChatComponent` and renames the other two (`CustomMessageChatComponent`, `PopupSidebarComponent`), noted on the route page.
-
-**6. `agentId="support"` has no backing agent in the quickstart**
-
-The Chat UI and Threads guides use `agentId="support"` throughout, but the quickstart only ever registers `default`. Run as published against a quickstart runtime, those snippets resolve to a non-existent agent. This repo registers a second `support` agent pointing at the same Agno process so the snippets work unedited.
-
-**7. The Angular/Agno quickstart has no backend step**
-
-[The quickstart](https://docs.copilotkit.ai/angular/agno/quickstart) contains the literal comment `<!-- setup skipped: agent-setup is not bundled for agno -->` where the Agno setup should be, and its runtime step only says to "register this backend as the `default` agent" with a link to the generic Copilot Runtime page — which shows a Next.js route handler and `BuiltInAgent`, not `AgnoAgent`. The `AgnoAgent` binding had to come from the **React** Agno quickstart (`https://docs.copilotkit.ai/agno/quickstart`). `frontend/server.ts` is therefore a composition of two doc pages: the Angular quickstart's Node server shape with the React quickstart's `AgnoAgent` construction.
-
-**8. `zod` is an undocumented direct dependency**
-
-`registerRenderToolCall`, `registerHumanInTheLoop`, and `SandboxFunction` samples all `import { z } from "zod"`, but the quickstart's install command is `npm install @copilotkit/angular @angular/cdk @copilotkit/runtime`. `zod` only resolves transitively; added explicitly here.
-
-**9. The production bundle exceeds Angular's default budget**
-
-Predicted by the quickstart's own troubleshooting box, and confirmed: a build fails at **4.65 MB** against the default 1 MB `initial` budget. `angular.json` raises it to 5 MB warning / 7 MB error. The build also emits CommonJS bailout warnings for `whatwg-url`, `@jetbrains/websandbox`, `partial-json`, and `chalk`.
-
-**10. Agno tool names must be camelCase to match the guides**
-
-The renderer name in `registerRenderToolCall({ name })` must equal the agent's tool name exactly. The guides are written against `getWeather(city)`, so `backend/main.py` declares `@tool(name="getWeather")` with a `city` parameter. A Python-idiomatic `get_weather(location)` would stream a plain-text answer with no card and look like a frontend bug.
-
-**11. Frontend-only tools need no Python declaration**
-
-`requestApproval` exists only in the browser, and the agent called it normally — verified over the wire, with the run pausing for the browser's response. CopilotKit forwards frontend tools to the agent in the AG-UI run input. The inverse still bites: a tool declared on the agent with **no** frontend handler registered will hang the run forever.
-
-**12. The Inspector page's version floor is stated for the wrong thing**
-
-[Inspector](https://docs.copilotkit.ai/angular/agno/inspector) says `@copilotkit/angular` "did not mount the Inspector before **0.4.0**" only inside the callout about deleting a hand-written mount. Everything else on the page — the automatic mount, `enableInspector`, the "nothing to install" claim — is written unconditionally. On 0.3.1, which is what this repo ran until this route was added, none of it holds: the package does not depend on `@copilotkit/web-inspector`, and `enableInspector` is not a member of `CopilotKitConfig`, so the page's only TypeScript sample does not compile. A reader on 0.3.x follows a page that describes a version they are not on and gets no error message saying so. This repo bumped to `^0.4.0`; the floor belongs at the top of the page.
-
-**13. `verify` cannot gate CI for a project that does not use Intelligence**
-
-The [CLI page](https://docs.copilotkit.ai/angular/agno/cli) says `verify` "exits non-zero unless every check passed, so it is usable as a CI gate". Exit 1 is confirmed. But three of its seven checks are Intelligence checks — hosted project selected, project API key present, key authenticates — and they **FAIL**, not `UNKNOWN`, when the project simply does not use Intelligence. This stack is fully working (runtime answers, two agents declared) and still exits 1. There is no documented flag to scope the run to the wiring checks, so the CI-gate advice does not hold for the majority of local setups, including the one the Angular quickstart produces.
-
-**14. `verify` reports the agent framework as `t`**
-
-The summary block prints `framework  t`. `/api/copilotkit/info` is the source: it reports `"className": "t"` for both agents — a **minified** class name from the runtime bundle, not `AgnoAgent`. The CLI passes it through verbatim, so the field that is supposed to tell you which integration answered is unreadable. Same run reports `generative UI  disabled`, consistent with issue #2.
-
-**15. The launcher corner the page recommends lands on the composer**
-
-The Inspector page's CSS sample moves the launcher bottom-left because that
-"keeps the launcher clear of the close button on a chat panel or sidebar". On a
-full-height `copilot-chat` — the quickstart's own layout, and this route's — the
-bottom-left corner is where the composer is. Applied verbatim here, the open
-panel sits over the text area: a Playwright click on the composer fails with
-`<cpk-web-inspector> intercepts pointer events` while the panel is open. The
-sample is correct about the docked chat surfaces and wrong about the default
-one, and the page does not say which layout it assumes.
-
-**16. The Shared state guide never initialises agent state, and its own fallback hides it**
-
-[Shared state](https://docs.copilotkit.ai/angular/agno/guides/shared-state)
-opens with a read sample whose `EMPTY_STATE` const implies the agent starts at
-`{ notes: [], priority: "normal" }`. It does not. The diagnostics strip on
-`/shared-state/demo` reports the agent's real state as `{}` until the browser
-writes to it, and the page renders `Priority: normal` anyway because
-`EMPTY_STATE` is applied at render time and never sent anywhere. So an agent
-asked about priority before any write has nothing in state to read, while the
-UI insists a value exists. The guide never says to seed the state, and the
-sample reads as if it had.
-
-Two consequences the page does not mention:
-
-- **`notes` disappears when the first write precedes the first run.** The
-  guide's `setPriority` does `agent.state ?? EMPTY_STATE`, but on a fresh page
-  `agent.state` is `{}` — present, so the `??` never fires and the spread
-  yields `{ priority }` with no `notes` key. Verified locally: press a priority
-  button before sending any message and the state becomes
-  `{"priority":"high"}`, after which the notes list iterates a key that is gone.
-
-  It does **not** reproduce once the agent has run at least once: CI drives a
-  baseline question first, the agent emits a state snapshot carrying `notes`,
-  and every later write then preserves it —
-  `{ "notes": [], "priority": "high" }`. So the bug is ordering-dependent, which
-  is worse than a consistent one: the guide's sample works in the order its own
-  prose implies and breaks in the order its UI invites, and nothing on the page
-  says a run has to happen first. `??` is the wrong operator for a value the
-  runtime initialises to an empty object.
-- **A "correct" answer can be read off the screen instead of the state.** The
-  left panel prints the priority as text, so a model can answer the question
-  from context alone. This is why the recorder now asks a baseline question
-  before any write and then asks across two different written values.
-
-**17. "Open Agents, then Agent. Your agent is listed" — it is not, yet**
-
-The [quickstart](https://docs.copilotkit.ai/angular/agno/quickstart)'s
-confirm-setup step reads: *"Open **Agents**, then **Agent**. Your agent is
-listed."* Opening that panel renders **"No agent selected — Select an agent
-from …"**. Nothing is listed until an agent is picked from a separate sidebar
-control (`[data-inspector-sidebar-agent-selector]`), which the step never
-mentions. Verified by recording both states: on arrival the panel says
-`No agent selected`; after choosing `default` it says
-`default Idle Last activity: …`.
-
-The step is one interaction short of what it describes, and a reader following
-it literally sees an empty panel at exactly the moment the page is telling them
-their setup is correct.
-
-**18. The context sample gives the reader nothing to observe**
-
-[Shared state](https://docs.copilotkit.ai/angular/agno/guides/shared-state)'s
-read-only context sample renders a bare **Use London time** button. Pressing it
-produces no visual change anywhere: it does not write agent state, it does not
-display the current timezone, and the component renders no value at all. A
-working button and a dead one are indistinguishable, and the only confirmation
-offered is to ask the agent and trust the prose that comes back.
-
-It does work. Captured on the wire, with the request aborted so no model call
-was spent:
-
-```
-before:  "timezone\":\"America/Los_Angeles\"
-after:   "timezone\":\"Europe/London\"
-```
-
-Three things the page never says, all of which a reader hits immediately:
-
-- **Re-registration is a remove-then-append, not an update.** The entry leaves
-  its position and returns at the *end* of the context list with a new id. The
-  count is unchanged, so a reader watching the top of a context list sees the
-  entry vanish. Verified: position 0 before the click, position 7 after.
-- **Nothing observable happens in the UI**, so the natural conclusion is that
-  the button is broken. This one cost real debugging time here before the wire
-  capture settled it.
-- **There is no reactive way to watch context.** `CopilotKit` exposes signals
-  for `agents`, `runtimeConnectionStatus`, `threadEndpoints`, `intelligence`,
-  `licenseStatus` and `suggestionsByAgent` — but none for context.
-  `core.getContextForAgent()` is public and read-only, and polling it is the
-  only hook available. The harness diagnostics strip polls at 750ms for exactly
-  this reason.
-
-Not a defect in the sample's behaviour — a defect in its testability, which
-rule 3 of `project-context.md` counts the same way.
-
-**19. The new `registerComponent` section runs, and its snippet is wrong four ways**
-
-[Frontend tools and generative UI](https://docs.copilotkit.ai/angular/agno/guides/frontend-tools-generative-ui)
-gained a new **first** section, "Let the agent display one of your components",
-teaching `registerComponent`: display-only generative UI, no `handler`, nothing
-on the agent side. It also added a row to the "Choose a generative UI path"
-table and a Next-steps link to `/reference/angular/functions/registerComponent`.
-
-The premise holds. `show_incident` is declared by the browser, forwarded over
-AG-UI, and called by the model with the Agno process untouched. Implemented
-verbatim at `@copilotkit/angular` 0.5.1, the published snippet then fails four
-ways, all reproduced against a live agent:
-
-1. **The agent apologises for the card it just drew.** With no `handler`, core
-   returns an empty tool result, the model reads the emptiness as failure, and
-   posts a second message contradicting the correct card above it. Every run.
-   `followUp: false` suppresses it — `RegisterComponentConfig` carries the field
-   and the guide never mentions it.
-2. **The loading guard never fires.** It gates on `status === "in-progress"`;
-   the observed status while arguments stream is `"executing"`, so the `@else`
-   branch runs with empty args and paints a blank card before the values land.
-3. **The status never reaches `"complete"`.** Sampled once a second for 25
-   seconds: `"executing"` throughout. The `registerRenderToolCall` snippet
-   higher up this same page gates its content on `"complete"`, so that
-   documented pattern applied to a display-only tool loads forever.
-4. **The card is not a card.** The snippet ships no CSS and pairs an inline
-   `<strong>` with an inline `<span>`; Angular's default
-   `preserveWhitespaces: false` strips the gap, so it renders as the unstyled
-   run-together string `INC-4711sev1`.
-
-Smaller gaps: the registration is a bare ` ```ts ` fence with no imports, so
-`registerComponent` and `z` are undefined identifiers as published; the section
-never says it must run in an Angular injection context, though the API
-reference requires one and the `registerFrontendTool` section below does say
-so; and the `description` you pass is not what the model receives — core
-prepends a fixed preamble.
-
-Everything is kept verbatim at
-`frontend/src/app/features/tools/incident-card.component.ts` and in
-`tools-chat.component.ts`. The defects are the snippet's own.
-
-*Note, not a finding:* `registerComponent` does not exist in
-`@copilotkit/angular` 0.4.0, which this repo declared until now, and `^0.4.0`
-can never reach 0.5.x. The quickstart's unpinned `npm install` gives a new
-reader 0.5.1, so the frontend moved to `^0.5.1` (and `@copilotkit/runtime` to
-`^1.70.1`, which 0.5.1 pins) to QA the section at all.
-
-**20. The same page now teaches two incompatible renderer styles**
-
-Still on [Frontend tools and generative UI](https://docs.copilotkit.ai/angular/agno/guides/frontend-tools-generative-ui):
-the older "Render a tool result" snippet imports
-`{ type AngularToolCall, type ToolRenderer }` and sets no `standalone`. The new
-`registerComponent` snippet imports the same two symbols as **values** and sets
-`standalone: true`. Two renderers, one page, one package, two import styles and
-two decorator shapes, with nothing on the page acknowledging the difference.
-
-`frontend/AGENTS.md` in this repo also states that components must **not** set
-`standalone: true` — it is the default in Angular v20+ — so the guide's new
-snippet violates the house rule its older sibling on the same page happens to
-respect. Both are kept verbatim here (rule 1); normalising either would hide
-the conflict.
-
-**21. Six documentation pages moved with no redirect and no note**
-
-The docs section `premium/*` was renamed to `intelligence/*` upstream. All six
-pages this repo tracks under it — `overview`, `intelligence-platform`,
-`managed-intelligence-platform`, `connect-your-runtime`, `self-hosting`,
-`threads-explained` — began returning **404** at their old paths, while the
-identical content serves 200 at the new ones. No redirect was left behind and
-no changelog entry announces the move.
-
-Cost here: `node ci/check-doc-drift.mjs` exited **2** on six HIGH "Page 404 /
-Removed" results, which reds the nightly pipeline's drift gate and sets
-`should_record=false` — so nothing in this repo recorded at all until the paths
-were retargeted. `threads-explained` hashed identical at the new path, which is
-the proof it was a move and not a rewrite; the other five carried ordinary
-prose drift on top.
-
-Retargeted in `frontend/scripts/sync-docs.ts`, `doc-snapshot/manifest.json`, and
-the six `doc-snapshot/pages/angular__agno__intelligence__*.md` filenames.
-
----
+Moved to [FINDINGS.md](FINDINGS.md).
 
 ## 11. Troubleshooting
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Chat sends, nothing streams back | Runtime or Agno process down | Check the Introduction route's connection panel; `curl http://localhost:8200/api/copilotkit/info`. |
+| Chat sends, nothing streams back | Runtime or Agno process down | Check the Introduction route's connection panel; `curl http://localhost:8210/api/copilotkit/info`. |
 | `/info` returns nothing | Runtime not started | `npm run runtime` from `frontend/`. |
 | A run starts, then hangs forever | The agent called a browser tool with no registered handler, so no result ever returns | Every tool the agent can call must have a matching `registerFrontendTool` / `registerHumanInTheLoop` mounted. |
 | Tool runs but the custom card doesn't render | Renderer name ≠ tool name | `registerRenderToolCall({ name })` must equal the Agno tool name exactly, including case. |
 | Chat renders unstyled | Missing stylesheet | `@import "@copilotkit/angular/styles.css";` must be in `src/styles.css`. |
-| CORS errors from the browser | Runtime CORS off | Keep `cors: true` in `createCopilotNodeListener`. The Agno process separately allows `localhost:4200` via `cors_allowed_origins`. |
+| CORS errors from the browser | Runtime CORS off | Keep `cors: true` in `createCopilotNodeListener`. The Agno process separately allows `localhost:4210` via `cors_allowed_origins`. |
 | Connection errors mentioning `localhost` | DNS resolving to IPv6 while the server binds IPv4 | Use `127.0.0.1` in `AGNO_AGENT_URL`. |
 | Production build fails on size | CopilotKit pulls in markdown and syntax-highlighting deps | Already raised in `angular.json`; see Known issues #9. |
 | Peer-dependency error on install | `@angular/cdk` major mismatch | Install the matching major, e.g. `@angular/cdk@^22` on Angular 22. |
@@ -732,7 +471,7 @@ agno/
 │
 ├── frontend/                  # Angular 22 app + the Copilot Runtime process
 │   ├── AGENTS.md              # Angular style rules this repo's own code follows
-│   ├── server.ts              # ★ CopilotRuntime + AgnoAgent binding  → :8200
+│   ├── server.ts              # ★ CopilotRuntime + AgnoAgent binding  → :8210
 │   ├── scripts/
 │   │   ├── generate-sources.ts  # ★ reads real files → generated-sources.ts
 │   │   ├── sync-docs.ts         # ★ automated doc-snapshot sync script
@@ -753,7 +492,7 @@ agno/
 │           │       attachments/  headless/
 │           └── pages/               # one page per doc route + demos.ts + status
 │
-└── backend/                   # Python agent — Agno AgentOS over AG-UI  → :8000
+└── backend/                   # Python agent — Agno AgentOS over AG-UI  → :8211
     ├── pyproject.toml
     └── main.py                # ★ agent, getWeather tool, AgentOS + AGUI interface
 ```

@@ -51,7 +51,7 @@ export const PAGES = definePages([
     // Leads with the versions, not the manifest. package.json declares
     // RANGES, so this clip used to show a floor while the run it
     // documented had installed something newer. VERSIONS.md is generated
-    // after install (ci/write-versions.mjs) and names what resolved.
+    // after install (scripts/write-versions.mjs) and names what resolved.
     // package.json stays as the first tab: the range is still what a
     // reader would write in their own project.
     ideFile: 'frontend/VERSIONS.md',
@@ -145,29 +145,6 @@ export const PAGES = definePages([
     waitAfterPromptMs: 4000,
   },
   {
-    id: 'a2ui',
-    name: 'Guides - A2UI schemas, styling, and recovery',
-    videoName: 'A2ui',
-    docPath: 'guides/a2ui',
-    route: 'a2ui',
-    ideFile: 'frontend/src/app/features/a2ui/a2ui-chat.component.ts',
-    startLine: 1,
-    endLine: 22,
-    extraTabs: [{ filePath: 'frontend/server.ts', startLine: 22, endLine: 30 }],
-    // Recorded as a documented finding rather than a working demo: the renderer
-    // only registers once `a2ui.catalog` is supplied, and the guide's catalog
-    // snippets are not self-contained. The handler goes back to the live guide
-    // and walks a reader through each undefined identifier, selecting it and
-    // then sweeping the page to show it is defined nowhere — see
-    // actions/a2ui.action.ts. It is narrated; `ci/lib/mux.mjs` muxes
-    // autorecorder/audio/a2ui-angular.m4a over the clip when that file exists.
-    // The prompt is kept so the entry stays valid and so re-enabling the chat
-    // turn is a one-line change once a catalog exists; the handler does not
-    // send it.
-    prompt: 'Could you show me a card that compares two flight options?',
-    waitAfterPromptMs: 4000,
-  },
-  {
     id: 'voice-multimodal',
     name: 'Guides - Voice and multimodal input',
     videoName: 'VoiceMultimodal',
@@ -203,6 +180,14 @@ export const PAGES = definePages([
       },
     ],
     prompt: 'Please delete my account. Check with me before you actually do it.',
+    // When the agent asks in prose instead of calling requestApproval, the take
+    // answers it -- up to twice -- so the clip shows where the conversation goes
+    // next. Each unanswered turn is named in the verdict (see hitl.action.ts).
+    prompts: [
+      'Please delete my account. Check with me before you actually do it.',
+      'Yes, delete my account.',
+      'Yes, go ahead.',
+    ],
     waitAfterPromptMs: 4000,
   },
   {
@@ -258,45 +243,14 @@ export const PAGES = definePages([
     extraTabs: [
       {
         filePath: 'frontend/src/app/features/threads/threads-demo.component.ts',
-        startLine: 10,
-        endLine: 35,
+        startLine: 24,
+        endLine: 47,
       },
     ],
-    // Thread endpoints are licensed. Unlicensed, the hand-built list stays empty
-    // and the drawer renders its locked state — which is the expected result,
-    // and what this recording documents. The chat beside it answers normally.
+    // Both surfaces work: frontend/server.ts passes `intelligence`, so the
+    // hand-built list and the drawer resolve real threads. The guide never
+    // says that is required; that finding is reported, not typed on screen.
     prompt: 'In one line, what are threads for?',
-    waitAfterPromptMs: 4000,
-  },
-  {
-    id: 'memory',
-    name: 'Memory',
-    videoName: 'Memory',
-    docPath: 'guides/threads-memory-attachments-headless',
-    route: 'memory',
-    ideFile: 'frontend/src/app/features/memory/memory-list.component.ts',
-    startLine: 9,
-    endLine: 30,
-    // isAvailable() is false against this runtime, so the guide's fallback is
-    // what renders. The handler rests on it before prompting the chat beside it.
-    prompt: 'Just so you know for later: I am working on an Angular 22 project.',
-    waitAfterPromptMs: 4000,
-  },
-  {
-    id: 'attachments',
-    name: 'Attachments',
-    videoName: 'Attachments',
-    docPath: 'guides/threads-memory-attachments-headless',
-    route: 'attachments',
-    ideFile: 'frontend/src/app/features/attachments/media-chat.component.ts',
-    startLine: 9,
-    endLine: 23,
-    // Asks for two values that exist only inside the attached image, so a
-    // correct answer is proof the file reached the model. The old
-    // "what types of attachments are supported?" could be answered from the
-    // system prompt alone, which is why a broken upload looked fine on video.
-    prompt:
-      'I attached a chart. What is its title, and what is the Q4 number?',
     waitAfterPromptMs: 4000,
   },
   {
@@ -331,5 +285,43 @@ export const PAGES = definePages([
     ],
     prompt: 'Say hi! I want to watch the events go by in the inspector.',
     waitAfterPromptMs: 4000,
+  },
+  // ── Demo-script clips (1-Demos/DEMO_SCRIPT.md) ─────────────────────────────
+  // Not doc-nav pages: findings clips that compile the guide's code verbatim.
+  // The engine intro shows the doc and the WORKING code, and `route` is the
+  // working demo (the engine needs `chatReady` there before the handler runs).
+  // The handler (actions/compile-demos.action.ts) then plays the script:
+  // doc snippet, IDE, the real `ng serve` error, and typed notes. No prompt is
+  // sent; `prompt` only satisfies the registry contract.
+  {
+    id: 'frontend-tools-compile',
+    name: 'Clip 3 - Frontend tools. Compile error (#1)',
+    videoName: 'FrontendToolsCompileError',
+    docPath: 'guides/frontend-tools-generative-ui',
+    route: 'frontend-tools-generative-ui',
+    // The guide's setDashboardFilter, verbatim in the harness...
+    ideFile: 'frontend/src/app/app.config.ts',
+    startLine: 15,
+    endLine: 27,
+    // ...and the page that runs with it.
+    extraTabs: [
+      { filePath: 'frontend/src/app/features/tools/tools-chat.component.ts', startLine: 55, endLine: 77 },
+    ],
+    prompt: 'No prompt: this take compiles the guide code (see actions/compile-demos.action.ts).',
+  },
+  {
+    id: 'a2ui-compile',
+    name: 'Clip 4 - A2UI. Undefined names (#2)',
+    videoName: 'A2uiUndefinedNames',
+    docPath: 'guides/a2ui',
+    route: 'a2ui',
+    // `a2ui` with recovery and no catalog: what the harness can do from the guide.
+    ideFile: 'frontend/src/app/app.config.ts',
+    startLine: 60,
+    endLine: 62,
+    extraTabs: [
+      { filePath: 'frontend/src/app/features/a2ui/a2ui-chat.component.ts', startLine: 1, endLine: 22 },
+    ],
+    prompt: 'No prompt: this take compiles the guide code (see actions/compile-demos.action.ts).',
   },
 ]);

@@ -28,8 +28,8 @@
  *   ctx.warn('"Mark high priority" button not found')  -> [PASS*] with the note
  *   ctx.fail('approval card never rendered')           -> [FAIL], clip still saved
  *
- * A `console.warn` reaches nobody: the summary, videos/RECORD_RESULTS.json and
- * the CI report only see what goes through `ctx`.
+ * A `console.warn` reaches nobody: the summary and videos/RECORD_RESULTS.json
+ * only see what goes through `ctx`.
  */
 
 import { type ActionContext, type PageActionHandler, type PageRecordConfig } from '../core/types';
@@ -38,13 +38,11 @@ import { type Page } from 'playwright';
 
 import { waitForPageReady } from './page-ready';
 
-import { runA2uiAction } from './a2ui.action';
-import { runAttachmentsAction } from './attachments.action';
 import { runChatUiAction } from './chat-ui.action';
+import { runA2uiCompileAction, runFrontendToolsCompileAction } from './compile-demos.action';
 import { runHeadlessAction } from './headless.action';
 import { runHitlAction } from './hitl.action';
 import { runInspectorAction } from './inspector.action';
-import { runMemoryAction } from './memory.action';
 import { runSharedStateAction } from './shared-state.action';
 import { runThreadsAction } from './threads.action';
 import { runToolsAction } from './tools.action';
@@ -57,16 +55,18 @@ export const ACTION_MAP: Record<string, PageActionHandler> = {
   quickstart: runStandardAction,
   'chat-ui': runChatUiAction,
   'frontend-tools-generative-ui': runToolsAction,
-  a2ui: runA2uiAction,
   'voice-multimodal': runVoiceAction,
   'human-in-the-loop': runHitlAction,
   'shared-state': runSharedStateAction,
   threads: runThreadsAction,
-  memory: runMemoryAction,
-  attachments: runAttachmentsAction,
   headless: runHeadlessAction,
   // The Inspector page's own subject is the panel, so the clip has to open it.
   inspector: runInspectorAction,
+  // Demo-script clips (1-Demos/DEMO_SCRIPT.md, clips 3 and 4): the doc's code
+  // compiled through doc-verbatim build configs, errors replayed from a real
+  // `ng serve` capture. See actions/compile-demos.action.ts.
+  'frontend-tools-compile': runFrontendToolsCompileAction,
+  'a2ui-compile': runA2uiCompileAction,
 };
 
 export async function executePageAction(

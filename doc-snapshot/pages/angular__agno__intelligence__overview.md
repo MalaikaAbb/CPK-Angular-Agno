@@ -1,93 +1,60 @@
 # CopilotKit Intelligence
 
-> CopilotKit Intelligence adds persistent threads, memory, analytics, automatic learning, and production operations on top of the runtime you already run.
-
+> CopilotKit Intelligence adds Rich Threads, User Memories, Automatic Learning, Channels, and Product Analytics to the CopilotKit app you already run.
 
 
 <IntelligenceOverview />
 
 ## What is CopilotKit Intelligence?
 
-CopilotKit Intelligence is CopilotKit's production layer for durable threads, persistence, hosted inspection, and operational visibility. It sits beside your CopilotKit runtime and gives production agentic applications shared infrastructure without changing the frontend SDK, AG-UI protocol, or agent framework you use.
+You want Rich Threads, User Memory, Automatic Learning, Channels, and Product Analytics without operating that storage yourself. CopilotKit Intelligence adds that layer to the CopilotKit app you already have. Your frontend, your agent, and your model stay where they are.
 
-Start here when you are deciding what the platform gives you and where it should run. The rest of the Intelligence docs are deeper dives into the specific feature or hosting path you choose.
+Open the page for the one thing you want to add. Each page below owns that topic.
 
-Ready to connect an existing app? Follow the [CopilotKit Intelligence quickstart](/angular/agno/intelligence/quickstart) to store and inspect your first thread.
+Connect an existing app in the [quickstart](/angular/agno/intelligence/quickstart).
 
-<Callout type="info" title="See this in Inspector">
-  Open Inspector on localhost. Go to **Learning**.
-  Review published Skills, their supporting Insights, and the Thread evidence
-  behind each pattern. Inspector also shows when new Threads are ready for a
-  Learning run; start runs and review Skill candidates in the Intelligence web
-  app.
+## What Intelligence gives you
 
-  More detail: [Inspector](/angular/agno/inspector).
-</Callout>
+- [Rich Threads](/angular/agno/guides/threads-memory-attachments-headless): Save the conversation and open it again on another device.
+- [User Memories](/angular/agno/intelligence/memories): Keep facts about a person after the conversation ends.
+- [Automatic Learning](/angular/agno/learning): Turn real usage into skills you can review and publish.
+- [Product Analytics](/angular/agno/intelligence/analytics): See what people do with your agent.
+- [Channels](/angular/agno/intelligence/channels): Run the same agent in Slack or Microsoft Teams.
+- [Inspector](/angular/agno/inspector): Watch threads, learning, and tool calls from your app on localhost.
 
+## Already have LangGraph threads or ADK sessions?
 
-## What the platform adds
+Import existing history once, then add Rich Threads around your current agent:
 
-| Capability | What it gives you | Deeper dive |
-|---|---|---|
-| Durable threads and persistence | Resumable conversations that survive reloads, devices, and browser sessions. | [Threads](/angular/agno/guides/threads-memory-attachments-headless) and [Threads & Persistence Architecture](/angular/agno/intelligence/threads-explained) |
-| Memory | Durable facts and preferences that can be recalled across conversations. | [Memories & Recall](/angular/agno/intelligence/memories) |
-| Analytics | See what your agents do and where users get value, from the same interaction data. | [Analytics](https://www.copilotkit.ai/copilotkit-intelligence#analytics-insights) |
-| Automatic learning | Agents improve from real usage. No fine-tuning pipeline required. | [Learning](/angular/agno/learning) |
-| Cloud-hosted Intelligence features | Projects, project API keys, conversation history, thread inspection, and plan management. | [Cloud-hosted CopilotKit Intelligence](/angular/agno/intelligence/managed-intelligence-platform) |
-| Platform-gated UI capabilities | Platform-gated UI surfaces such as Fully Headless Chat UI. | [Fully Headless Chat UI](/angular/agno/guides/threads-memory-attachments-headless) |
-| Self-hosting | The same platform running inside your own Kubernetes cluster, VPC, or data boundary. | [Self-host CopilotKit Intelligence](/angular/agno/intelligence/self-hosting) |
+- [Import LangGraph threads](/angular/langgraph-python/threads-import) from LangGraph Server, LangGraph Platform, or LangSmith Deployments that expose the LangGraph SDK thread and run APIs. Arbitrary LangChain message stores, LangSmith traces, and embedded checkpointers are not supported sources.
+- [Import Google ADK sessions](/angular/google-adk/threads-import) from supported ADK database session stores or Vertex/Agent Engine session history.
 
-<IntelligenceFeatureCards />
+Import copies history; it does not establish ongoing database replication. Future CopilotKit-mediated runs persist to Intelligence and continue through native persistence when your agent remains connected to a durable LangGraph checkpointer or deployment, or an ADK session service with appropriate retention. Keep that native persistence in place.
 
-Follow the Intelligence quickstart to connect your runtime and confirm threads work.
+[Skill delivery](/angular/agno/intelligence/learned-skills) combines published Skills from several Learning containers in one agent, with one request for each refresh.
 
-[Open the Intelligence quickstart](/angular/agno/intelligence/quickstart)
+## Choose where Intelligence runs
 
-## Hosting options
+Cloud-hosted and self-hosted use the same app APIs, so you can start on one and move later.
 
-| Option | Choose it when | What you operate |
-|---|---|---|
-| [Cloud-hosted CopilotKit Intelligence](/angular/agno/intelligence/managed-intelligence-platform) | You want CopilotKit to run the platform for you: hosted projects, API keys, thread history, dashboard inspection, and plan management. | Your app, your runtime, your agent, and your model provider credentials. |
-| [Self-host CopilotKit Intelligence](/angular/agno/intelligence/self-hosting) | You need the platform inside your own VPC, Kubernetes cluster, data residency boundary, or enterprise operations model. | The `copilot-intelligence` Helm release, Postgres, Redis, ingress, OIDC, secrets, upgrades, and monitoring. |
-
-Both options use the same CopilotKit application surface. Your frontend still uses CopilotKit APIs, your runtime still speaks AG-UI, and your agents keep the same framework integration. The deployment choice changes the platform endpoint and credentials your runtime uses.
-
-## Plans and access
-
-The cloud-hosted version includes self-service plans for individual developers and teams, plus the Enterprise Intelligence tier for larger deployments. You manage cloud-hosted plans in the web app.
-
-Self-hosted access is available on the Team self-hosted plan or a custom Enterprise plan. Use it when you have a concrete compliance, residency, network, or platform-operations requirement that makes a hosted service the wrong fit.
-
-<OpsPlatformCTA
-  variant="inline"
-  title="Create a free CopilotKit Intelligence account"
-  body="Start with the cloud-hosted Developer tier, create a project, and inspect persistent threads from the web app."
-  surface="docs_intelligence_overview"
+<div className="intelligence-accent-cards">
+<CTACards
+  columns={2}
+  cards={[
+    {
+      iconKey: "cloud",
+      title: "Cloud-hosted",
+      description:
+        "CopilotKit runs Intelligence for you. Create a project, get a key, and manage your plan in the web app.",
+      href: "/intelligence/managed-intelligence-platform",
+    },
+    {
+      iconKey: "server",
+      title: "Self-hosted",
+      description:
+        "Run Intelligence in your own Kubernetes cluster or AWS account with the Helm chart or the ECS bundle.",
+      href: "/intelligence/self-hosting",
+    },
+  ]}
 />
-
-## Which page should I read next?
-
-| Goal | Read this |
-|---|---|
-| Decide what the platform includes | Stay on this overview. |
-| Connect an app to hosted projects and API keys | [Cloud-hosted CopilotKit Intelligence](/angular/agno/intelligence/managed-intelligence-platform) |
-| Run the platform in your own cluster | [Self-host CopilotKit Intelligence](/angular/agno/intelligence/self-hosting) |
-| Understand the runtime/platform architecture | [CopilotKit Intelligence architecture](/angular/agno/intelligence/intelligence-platform) |
-| Add persistent conversations to an app | [Threads](/angular/agno/guides/threads-memory-attachments-headless) |
-| Give an agent durable context across conversations | [Memories & Recall](/angular/agno/intelligence/memories) |
-| Turn real usage into reusable agent behavior | [Learning](/angular/agno/learning) |
-| Understand thread replay and realtime sync | [Threads & Persistence Architecture](/angular/agno/intelligence/threads-explained) |
-
-## FAQs
-
-### Does my application code change between hosting options?
-
-No. Your frontend UI, CopilotKit runtime, and agent integration stay focused on CopilotKit APIs. The deployment mode changes which platform URL and credentials your runtime uses.
-
-### What is the difference between a project API key and a license key?
-
-A project API key connects your runtime to one cloud-hosted CopilotKit Intelligence project. A license key unlocks self-hosted CopilotKit Intelligence capabilities and does not require runtime traffic to go through the cloud-hosted service.
-
-### Can I start cloud-hosted and move to self-hosted later?
-
-Yes. The application integration is intentionally the same. Moving from cloud-hosted projects to self-hosting is available on the Team self-hosted plan or a custom Enterprise plan. Plan the migration around data movement, identity, network endpoints, and operational ownership rather than a frontend rewrite.
+</div>

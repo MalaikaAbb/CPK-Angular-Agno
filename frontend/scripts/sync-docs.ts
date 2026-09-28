@@ -25,10 +25,9 @@ const DOC_PAGES = [
   { docPath: '/angular/agno/cli', routes: [] },
   { docPath: '/angular/agno/build-with-agents', routes: [] },
   { docPath: '/angular/agno/intelligence/threads-explained', routes: [] },
-  { docPath: '/angular/agno/inspector', routes: [] },
+  { docPath: '/angular/agno/inspector', routes: ['/inspector'] },
   { docPath: '/angular/agno/intelligence/overview', routes: [] },
   { docPath: '/angular/agno/intelligence/managed-intelligence-platform', routes: [] },
-  { docPath: '/angular/agno/intelligence/connect-your-runtime', routes: [] },
   { docPath: '/angular/agno/intelligence/self-hosting', routes: [] },
   { docPath: '/angular/agno/intelligence/intelligence-platform', routes: [] },
   { docPath: '/angular/agno/copilot-runtime', routes: [] },
@@ -39,6 +38,25 @@ const DOC_PAGES = [
   { docPath: '/angular/agno/auth', routes: [] },
   { docPath: '/angular/agno/concepts/architecture', routes: [] },
   { docPath: '/angular/agno/contributing/code-contributions', routes: [] },
+  // Linked from tracked pages and live, but in no sitemap entry for this
+  // section -- found by following their links, tracked 2026-09-18.
+  { docPath: '/angular/agno/agentic-protocols/ag-ui', routes: [] },
+  { docPath: '/angular/agno/backend/agent-runner', routes: [] },
+  { docPath: '/angular/agno/backend/copilot-runtime', routes: [] },
+  { docPath: '/angular/agno/backend/runtime-endpoints', routes: [] },
+  { docPath: '/angular/agno/contributing/code-contributions/package-linking', routes: [] },
+  { docPath: '/angular/agno/deploy/agentcore', routes: [] },
+  { docPath: '/angular/agno/intelligence/learned-skills', routes: [] },
+  { docPath: '/angular/agno/intelligence/memories', routes: ['/memory'] },
+  { docPath: '/angular/agno/learning', routes: [] },
+  { docPath: '/angular/agno/runtime-server-adapter', routes: [] },
+  { docPath: '/angular/agno/troubleshooting/debug-mode', routes: [] },
+  { docPath: '/angular/agno/troubleshooting/event-inspector', routes: [] },
+  // Linked from the pages above; found on the second pass.
+  { docPath: '/angular/agno/backend/ag-ui', routes: [] },
+  { docPath: '/angular/agno/backend/custom-agent', routes: [] },
+  { docPath: '/angular/agno/backend/self-managed-agents', routes: [] },
+  { docPath: '/angular/agno/vs-code-extension', routes: [] },
 ];
 
 function fetchText(url: string): Promise<{ status: number; body: string }> {
@@ -414,7 +432,7 @@ async function run() {
   console.log('----------------------------------------------------');
   console.log(`📊 Summary: Checked ${DOC_PAGES.length} documentation pages against live docs.`);
   if (changedPages.length === 0) {
-    console.log('✅ Status: ALL 29 PAGES ARE UP TO DATE (0 doc drift detected).');
+    console.log(`✅ Status: ALL ${DOC_PAGES.length} PAGES ARE UP TO DATE (0 doc drift detected).`);
   } else {
     console.log(`⚠️ Status: ${changedPages.length} page(s) changed:`);
     for (const p of changedPages) {

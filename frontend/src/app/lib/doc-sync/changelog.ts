@@ -30,10 +30,13 @@ const LOGGED: ReadonlySet<PageOutcome> = new Set<PageOutcome>([
 
 const TITLE = "# Doc drift changelog";
 
+// Regenerated on every write, so editing it here changes the header of
+// doc-snapshot/CHANGELOG.md on the next sync that records a change.
 const INTRO = [
-  "What the CopilotKit docs changed under this repo, written by the sync on",
-  "`/doc-sync`. Only pages that actually moved are recorded — a sync that finds",
-  "everything unchanged writes nothing here at all.",
+  "What the CopilotKit docs changed under this repo, written by whichever sync",
+  "ran — the `/doc-sync` page or `npm run doc:sync`. Only pages that actually",
+  "moved are recorded — a sync that finds everything unchanged writes nothing",
+  "here at all.",
   "",
   `Holds the ${KEEP_ENTRIES} most recent dated entries. When a change lands on a fourth`,
   "date, the oldest entry is dropped. Entries are counted, not aged, so a gap of",
