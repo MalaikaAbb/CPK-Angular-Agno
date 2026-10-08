@@ -22,7 +22,7 @@ This repo is a **living test harness** for that pairing. Each route implements w
 
 Tracks: **<https://docs.copilotkit.ai/angular/agno>**
 
-Scope is the eight pages named at build time: the quickstart plus the seven task guides. The last guide covers four topics at once and is split into four routes here.
+Scope is the eight pages named at build time (the quickstart plus the seven task guides), plus two added later: Sub-agents and AG-UI. The last guide covers four topics at once and is split into four routes here.
 
 ---
 
@@ -34,12 +34,15 @@ Browser (Angular 22, zoneless)
   │  POST http://localhost:8210/api/copilotkit
   ▼
 Copilot Runtime  ·  localhost:8210        ← Node, frontend/server.ts
-  │  agents: { default, support } → new AgnoAgent({ url })
+  │  agents: { default, support, research-agent } → new AgnoAgent({ url })
+  │          { subagents }                         → …/subagents/agui
   │  a2ui: {}  → A2UIMiddleware
-  │  POST http://localhost:8211/agui      ← AG-UI over SSE
+  │  POST http://localhost:8211/agui            ← AG-UI over SSE
+  │  POST http://localhost:8211/subagents/agui  ← Sub-agents supervisor
   ▼
 Agno AgentOS  ·  localhost:8211           ← Python / FastAPI
-  │  AgentOS(agents=[agent], interfaces=[AGUI(agent=agent)])
+  │  AgentOS(agents=[agent, subagents_supervisor],
+  │          interfaces=[AGUI(agent=agent), AGUI(agent=subagents_supervisor, prefix="/subagents")])
   ▼
 OpenAI  (gpt-4o)
 ```
@@ -50,7 +53,7 @@ Three points worth noting:
 - **The backend for this framework is Python.** Agno is a Python library; the agent runs under `uvicorn`, not Node.
 - **The model key never reaches the browser**, and never reaches the runtime either. Only the Agno process holds it.
 
-**Why two agent ids.** `default` and `support` both resolve to the same Agno process. `default` is the id CopilotKit's prebuilt components use with no configuration; `support` exists so that the Chat UI and Threads guides' snippets — which are written as `agentId="support"` — run exactly as published instead of needing an edit.
+**Why four agent ids.** `default`, `support` and `research-agent` all resolve to the same Agno agent. `default` is the id CopilotKit's prebuilt components use with no configuration. `support` and `research-agent` are aliases, so the Chat UI and Threads guides (`agentId="support"`) and the AG-UI page (`injectAgentStore("research-agent")`) run exactly as published. `subagents` is a different agent: the Sub-agents supervisor, served by the same Agno process at `/subagents/agui`.
 
 ---
 
@@ -209,7 +212,7 @@ The one-command check the quickstart prescribes:
 curl -s http://localhost:8210/api/copilotkit/info
 ```
 
-It should list `default` and `support` under `agents`.
+It should list `default`, `support`, `research-agent` and `subagents` under `agents`.
 
 The CLI check the [CLI page](https://docs.copilotkit.ai/angular/agno/cli) added on 30 Aug, wired to this repo's port:
 
@@ -284,6 +287,16 @@ These four routes all come from the single `threads-memory-attachments-headless`
 
 **`/inspector` — Inspector.** **Try:** open the demo and look at the bottom-left corner, then open **Agents → Agent** and send a message with **AG-UI Events** open. **Pass:** the badge reads `cpk-web-inspector mounted`, the launcher sits bottom-left (the page's CSS override), the agent is listed, and events move while the reply streams. **Fail:** no launcher, or the badge stays on `no cpk-web-inspector`. Nothing in the demo component mounts the element — that is the claim under test.
 
+### Agent capabilities
+
+**`/multi-agent/subagents` — Sub-agents**
+A supervisor Agno agent hands work to research, writing and critique sub-agents through tool calls, and records each hand-off in shared state. **Try:** `Write a short paragraph about the history of the bicycle.` **Pass:** Researcher, Writer and Critic cards appear in the chat in turn, each going from "Working" to "Complete". Each one joins the delegation log on the left once it completes, and the log's role pills light up. **Fail:** the supervisor answers alone with no cards, or the cards complete but the log stays at `0 calls`, meaning state isn't reaching the browser.
+
+### Backend
+
+**`/ag-ui` — AG-UI**
+Reads an agent's messages and run status through `injectAgentStore`, and subscribes to its raw AG-UI events. **Try:** open the browser console, then ask `What's the weather in Tokyo?` **Pass:** the message count rises, "Agent is running…" shows during the run, and the console logs `Streaming text:`, `Tool called: getWeather` and `State changed:`. **Fail:** the count stays at 0 and nothing is logged, meaning `research-agent` didn't resolve.
+
 **`/status`** — Every route and its status in one table.
 
 ---
@@ -327,6 +340,8 @@ Verified 2026-08-12 against a live stack (real OpenAI key, no license key).
 | `/angular/agno/intelligence/overview` | — | 📖 Reference | No route. Rewritten on 2026-09-23 (110 lines to 44): the feature table whose automatic-learning cell changed on 2026-09-21 is gone, as is its "Go to **Automatic Learning**" step (#37). Nothing in the harness quotes it. |
 | `/angular/agno/vs-code-extension` | — | 📖 Reference | Editor extension; tracked. |
 | `/angular/agno/contributing/code-contributions/package-linking` | — | 📖 Reference | Contributor setup. |
+| `/angular/agno/multi-agent/subagents` | `/multi-agent/subagents` | 🚧 Not started | Backend verified over the wire 2026-10-08: all three sub-agents called; `STATE_SNAPSHOT` carries three `completed` delegations. Browser rendering not yet verified. |
+| `/angular/agno/ag-ui` | `/ag-ui` | 🚧 Not started | Runtime `/info` lists `research-agent`. Browser rendering and console output not yet verified. |
 
 **Legend:** ✅ Working · ⚠️ Partial (blocked by something outside this repo) · 📖 Reference · ❌ Broken · 🚧 Not started
 
@@ -488,13 +503,16 @@ agno/
 │           ├── components/          # harness chrome (nav, header, source, health)
 │           ├── features/            # ★ the doc code that actually runs
 │           │   ├── quickstart/  chat-ui/  tools/  a2ui/
-│           │   └── media/  hitl/  shared-state/  threads/  memory/
-│           │       attachments/  headless/
+│           │   ├── media/  hitl/  shared-state/  threads/  memory/
+│           │   │   attachments/  headless/
+│           │   └── subagents/  ag-ui/
 │           └── pages/               # one page per doc route + demos.ts + status
 │
 └── backend/                   # Python agent — Agno AgentOS over AG-UI  → :8211
     ├── pyproject.toml
-    └── main.py                # ★ agent, getWeather tool, AgentOS + AGUI interface
+    ├── main.py                # ★ agent, getWeather tool, AgentOS + AGUI interfaces
+    └── agents/
+        └── subagents.py       # ★ Sub-agents supervisor (doc demo code, verbatim)
 ```
 
 The nav, every route header, the demo links, and the status table all derive from `frontend/src/app/lib/nav-config.ts`, so a route's status is stated once.
@@ -509,6 +527,8 @@ The nav, every route header, the demo links, and the status table all derive fro
 
 **Guides** — [Chat UI and customization](https://docs.copilotkit.ai/angular/agno/guides/chat-ui) · [Frontend tools and generative UI](https://docs.copilotkit.ai/angular/agno/guides/frontend-tools-generative-ui) · [A2UI](https://docs.copilotkit.ai/angular/agno/guides/a2ui) · [Voice and multimodal](https://docs.copilotkit.ai/angular/agno/guides/voice-multimodal) · [Human-in-the-loop and interrupts](https://docs.copilotkit.ai/angular/agno/guides/human-in-the-loop) · [Shared state and agent context](https://docs.copilotkit.ai/angular/agno/guides/shared-state) · [Threads, memory, attachments, and headless UI](https://docs.copilotkit.ai/angular/agno/guides/threads-memory-attachments-headless)
 
-**Backend** — [Copilot Runtime](https://docs.copilotkit.ai/angular/agno/backend/copilot-runtime) · [React Agno quickstart](https://docs.copilotkit.ai/agno/quickstart) (source of the `AgnoAgent` binding)
+**Agent capabilities** — [Sub-agents](https://docs.copilotkit.ai/angular/agno/multi-agent/subagents)
+
+**Backend** — [Copilot Runtime](https://docs.copilotkit.ai/angular/agno/backend/copilot-runtime) · [AG-UI](https://docs.copilotkit.ai/angular/agno/ag-ui) · [React Agno quickstart](https://docs.copilotkit.ai/agno/quickstart) (source of the `AgnoAgent` binding)
 
 **External** — [Agno docs](https://docs.agno.com) · [AG-UI protocol](https://ag-ui.com) · [Angular API reference](https://docs.copilotkit.ai/reference/angular)

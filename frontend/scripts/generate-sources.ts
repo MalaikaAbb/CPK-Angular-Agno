@@ -21,6 +21,7 @@ const TARGETS = [
   '../backend/main.py',
   '../backend/pyproject.toml',
   '../.env.example',
+  '../backend/agents/subagents.py',
 ];
 
 const EXTENSIONS = ['.ts', '.html', '.css', '.py', '.toml', '.example'];

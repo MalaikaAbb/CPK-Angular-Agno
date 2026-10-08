@@ -11,6 +11,7 @@
 import { Component } from '@angular/core';
 
 import { DemoFrame } from '../components/demo-frame';
+import { AgUiDemoComponent } from '../features/ag-ui/ag-ui-demo.component';
 import { A2uiChatComponent } from '../features/a2ui/a2ui-chat.component';
 import { MediaChatComponent } from '../features/attachments/media-chat.component';
 import { ChatUiDemoComponent } from '../features/chat-ui/chat-ui-demo.component';
@@ -20,6 +21,7 @@ import { InspectorDemoComponent } from '../features/inspector/inspector-demo.com
 import { MemoryDemoComponent } from '../features/memory/memory-demo.component';
 import { VoiceChatComponent } from '../features/media/voice-chat.component';
 import { QuickstartChat } from '../features/quickstart/quickstart-chat';
+import { AgentStateFeatureComponent } from '../features/subagents/agent-state-feature.component';
 import { SharedStateChatComponent } from '../features/shared-state/shared-state-chat.component';
 import { SharedStateDiagnosticsComponent } from '../features/shared-state/shared-state-diagnostics.component';
 import { ThreadsDemoComponent } from '../features/threads/threads-demo.component';
@@ -142,3 +144,20 @@ export class HeadlessDemo {}
   /></app-demo-frame>`,
 })
 export class InspectorDemo {}
+
+@Component({
+  selector: 'app-subagents-demo',
+  imports: [DemoFrame, AgentStateFeatureComponent],
+  template: `<app-demo-frame backTo="/multi-agent/subagents"
+    ><div style="height: 100%; overflow: auto">
+      <showcase-agent-state-feature /></div
+  ></app-demo-frame>`,
+})
+export class SubagentsDemo {}
+
+@Component({
+  selector: 'app-ag-ui-demo-page',
+  imports: [DemoFrame, AgUiDemoComponent],
+  template: `<app-demo-frame backTo="/ag-ui"><app-ag-ui-demo /></app-demo-frame>`,
+})
+export class AgUiDemo {}

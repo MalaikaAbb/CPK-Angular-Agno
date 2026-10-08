@@ -62,6 +62,14 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/ide-view.component').then((m) => m.IdeViewComponent),
   },
+  {
+    path: 'multi-agent/subagents/demo',
+    loadComponent: () => import('./pages/demos').then((m) => m.SubagentsDemo),
+  },
+  {
+    path: 'ag-ui/demo',
+    loadComponent: () => import('./pages/demos').then((m) => m.AgUiDemo),
+  },
 
   // Doc routes, inside the sidebar chrome.
   {
@@ -96,6 +104,11 @@ export const routes: Routes = [
       },
       { path: 'headless', loadComponent: () => import('./pages/headless') },
       { path: 'inspector', loadComponent: () => import('./pages/inspector') },
+      {
+        path: 'multi-agent/subagents',
+        loadComponent: () => import('./pages/subagents'),
+      },
+      { path: 'ag-ui', loadComponent: () => import('./pages/ag-ui') },
       { path: 'status', loadComponent: () => import('./pages/status') },
       { path: 'doc-sync', loadComponent: () => import('./pages/doc-sync') },
       { path: '**', redirectTo: '' },
