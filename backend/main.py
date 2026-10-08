@@ -13,6 +13,10 @@ from typing import TypedDict
 import random
 from agno.tools import tool
 
+# Sub-agents supervisor, copied verbatim from the demo code of
+# https://docs.copilotkit.ai/angular/agno/multi-agent/subagents
+from agents.subagents import agent as subagents_supervisor
+
 #load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 load_dotenv()
 
@@ -49,8 +53,13 @@ agent = Agent(
 )
 
 agent_os = AgentOS(
-    agents=[agent],
-    interfaces=[AGUI(agent=agent)],
+    agents=[agent, subagents_supervisor],
+    interfaces=[
+        AGUI(agent=agent),
+        # The demo mounts this with a custom state-aware route because older
+        # Agno's stock router emitted no STATE_SNAPSHOT; Agno 3.x's does.
+        AGUI(agent=subagents_supervisor, prefix="/subagents"),  # -> /subagents/agui
+    ],
     cors_allowed_origins=[
         "http://localhost:3000",
         "http://localhost:4210",

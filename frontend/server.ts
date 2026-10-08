@@ -9,6 +9,12 @@
  *
  * `default` and `support` resolve to the same Agno process. `support` exists so
  * the doc snippets that use `agentId="support"` (Chat UI, Threads) run verbatim.
+ * `research-agent` is the same kind of alias, for the AG-UI page's snippets
+ * (https://docs.copilotkit.ai/angular/agno/ag-ui).
+ *
+ * `subagents` is the supervisor from the Sub-Agents demo code
+ * (https://docs.copilotkit.ai/angular/agno/multi-agent/subagents), served by
+ * the same Agno process at `/subagents/agui`.
  *
  * `a2ui: {}` enables A2UIMiddleware for every registered agent, per
  * https://docs.copilotkit.ai/angular/agno/backend/copilot-runtime
@@ -19,6 +25,7 @@ import { createCopilotNodeListener } from "@copilotkit/runtime/v2/node";
 import { AgnoAgent } from "@ag-ui/agno";
 
 const agentUrl = process.env["AGNO_AGENT_URL"] ?? "http://localhost:8211/agui";
+const subagentsUrl = new URL("/subagents/agui", agentUrl).toString();
 
 /**
  * Intelligence client, verbatim from
@@ -37,6 +44,8 @@ const runtime = new CopilotRuntime({
   agents: {
     default: new AgnoAgent({ url: agentUrl }),
     support: new AgnoAgent({ url: agentUrl }),
+    "research-agent": new AgnoAgent({ url: agentUrl }),
+    subagents: new AgnoAgent({ url: subagentsUrl }),
   },
   a2ui: {},
   intelligence,

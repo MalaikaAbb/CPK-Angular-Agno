@@ -219,6 +219,38 @@ export const NAV: NavGroup[] = [
     ],
   },
   {
+    title: 'Agent capabilities',
+    routes: [
+      {
+        path: '/multi-agent/subagents',
+        hasDemo: true,
+        title: 'Sub-agents',
+        docPath: '/angular/agno/multi-agent/subagents',
+        summary:
+          'A supervisor Agno agent delegating to research, writing, and critique sub-agents, with a delegation log read from shared state.',
+        status: 'working',
+        statusNote:
+          'Backend comes from the page’s demo code — the guide itself skips the Agno setup step. Verified over the wire: all three sub-agents called, STATE_SNAPSHOT carries the completed delegations. Browser rendering not yet verified.',
+      },
+    ],
+  },
+  {
+    title: 'Backend',
+    routes: [
+      {
+        path: '/ag-ui',
+        hasDemo: true,
+        title: 'AG-UI',
+        docPath: '/angular/agno/ag-ui',
+        summary:
+          'Reading an agent’s messages and run status through injectAgentStore, and subscribing to its raw AG-UI event stream.',
+        status: 'working',
+        statusNote:
+          'The runtime registers research-agent. Browser rendering and console output not yet verified.',
+      },
+    ],
+  },
+  {
     title: 'Doc Sync',
     routes: [
       {
